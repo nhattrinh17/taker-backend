@@ -1,0 +1,69 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: node:latest
+
+    working_directory: ~/app
+
+    steps:
+      - checkout
+
+      # Install Docker
+      - run:
+          name: Install Docker
+          command: |
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sh get-docker.sh
+
+      # Install dependencies
+      - run:
+          name: Install Dependencies
+          command: npm install
+
+      # Build the NestJS app
+      - run:
+          name: Build NestJS App
+          command: npm run build
+
+      # Install AWS CLI
+      - run:
+          name: Install AWS CLI
+          command: |
+            apt-get update
+            apt-get install -y awscli
+
+      # Authenticate with AWS CLI
+      - run:
+          name: AWS CLI Login
+          command: aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY && aws configure set default.region ap-southeast-1
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      # Authenticate with AWS ECR
+      - run:
+          name: AWS ECR Login
+          command: |
+            aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY_HOST
+
+      # Build Docker image
+      - run:
+          name: Build Docker Image
+          command: |
+            docker build -t $DOCKER_REGISTRY_HOST/$REPOSITORY_NAME_SERVICE:latest .
+
+      # Push Docker image to ECR
+      - run:
+          name: Push Docker Image to ECR
+          command: |
+            docker push $DOCKER_REGISTRY_HOST/$REPOSITORY_NAME_SERVICE:latest
+
+workflows:
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: [main]
