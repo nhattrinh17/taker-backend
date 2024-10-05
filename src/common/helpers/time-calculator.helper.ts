@@ -1,42 +1,37 @@
-export function calculateTimeDifference(
+export function calculateTimeDifferenceV2(
   lat1: number,
   lon1: number,
   lat2: number,
   lon2: number,
+  unit = 'K',
 ) {
-  // Convert latitude and longitude from degrees to radians
-  const rad = Math.PI / 180;
-  const lat1Rad = lat1 * rad;
-  const lon1Rad = lon1 * rad;
-  const lat2Rad = lat2 * rad;
-  const lon2Rad = lon2 * rad;
+  const radlat1 = (Math.PI * lat1) / 180;
+  const radlat2 = (Math.PI * lat2) / 180;
+  const theta = lon1 - lon2;
+  const radtheta = (Math.PI * theta) / 180;
+  let dist =
+    Math.sin(radlat1) * Math.sin(radlat2) +
+    Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+  if (dist > 1) {
+    dist = 1;
+  }
+  dist = Math.acos(dist);
+  dist = (dist * 180) / Math.PI;
+  dist = dist * 60 * 1.1515;
+  if (unit == 'K') {
+    dist = dist * 1.609344;
+  }
+  if (unit == 'N') {
+    dist = dist * 0.8684;
+  }
 
-  // Calculate the time difference in milliseconds
-  const earthRadius = 6371; // Earth's radius in kilometers
-  const distance =
-    Math.acos(
-      Math.sin(lat1Rad) * Math.sin(lat2Rad) +
-        Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.cos(lon2Rad - lon1Rad),
-    ) * earthRadius;
+  // increase distance by 20%
+  dist = dist + dist * 0.2;
 
-  // Assuming average speed of 30 km/h
-  const timeDifferenceHours = distance / 20;
+  const v = 30;
+  const timeDifferenceMilliseconds = (dist / v) * 60 * 1000;
 
-  // Convert hours to minutes
-  const timeDifferenceMilliseconds = timeDifferenceHours * 60;
-
-  // Get current date
-  // const currentDate = new Date();
-
-  // // Calculate the local time difference
-  // const localTimeDifference = new Date().getTimezoneOffset() * 60 * 1000;
-
-  // Calculate local time in the destination location
-  // const destinationLocalTime = new Date(
-  //   currentDate.getTime() + timeDifferenceMilliseconds + localTimeDifference,
-  // );
-
-  return { time: timeDifferenceMilliseconds, distance };
+  return { time: timeDifferenceMilliseconds, distance: dist };
 }
 
 // Example usage

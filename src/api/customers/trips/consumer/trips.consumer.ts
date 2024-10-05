@@ -18,7 +18,7 @@ import {
   RESOLUTION,
   RequestTripData,
   StatusEnum,
-  calculateTimeDifference,
+  calculateTimeDifferenceV2,
 } from '@common/index';
 import { FirebaseService } from '@common/services/firebase.service';
 import {
@@ -200,7 +200,7 @@ export class TripConsumer {
       // );
       // Calculate time difference between customer and shoemakers
       const shoemakersWithTime = shoemakers.map((shoemaker) => {
-        const { time, distance } = calculateTimeDifference(
+        const { time, distance } = calculateTimeDifferenceV2(
           Number(shoemaker.latitude),
           Number(shoemaker.longitude),
           Number(trip.latitude),
