@@ -151,10 +151,10 @@ export class TripConsumer {
       }
 
       const customer = await this.customerRepository.findOneBy({ id: userId });
-      console.log(
-        '🚀 ~ TripConsumer ~ processFindClosestShoemakers ~ customer:',
-        customer,
-      );
+      // console.log(
+      //   '🚀 ~ TripConsumer ~ processFindClosestShoemakers ~ customer:',
+      //   customer,
+      // );
 
       const h = h3.latLngToCell(
         Number(trip.latitude),
@@ -163,7 +163,7 @@ export class TripConsumer {
       );
 
       // Find around 5km2, with 800 items
-      const k = 15;
+      const k = 12;
       const nearbyShoemakers = h3.gridDisk(h, k);
       this.logger.log(
         `nearbyShoemakers found with length nearbyShoemakers ${nearbyShoemakers.length}`,
