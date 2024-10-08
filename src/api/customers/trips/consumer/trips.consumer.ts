@@ -412,6 +412,7 @@ export class TripConsumer {
               data: {
                 fullName: shoemaker?.fullName,
                 time: shoemaker?.time,
+                distance: shoemaker?.distance,
                 phone: shoemaker?.phone,
                 avatar: shoemaker?.avatar,
                 id: shoemaker?.id,

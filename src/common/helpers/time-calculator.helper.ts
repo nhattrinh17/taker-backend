@@ -26,10 +26,11 @@ export function calculateTimeDifferenceV2(
   }
 
   // increase distance by 20%
-  dist = dist + dist * 0.2;
+  dist = dist + dist * 0.28;
 
-  const v = 30;
-  const timeDifferenceMilliseconds = (dist / v) * 60 * 1000;
+  // average speed 22km/h
+  const v = 22;
+  const timeDifferenceMilliseconds = (dist / v) * 60;
 
   return { time: timeDifferenceMilliseconds, distance: dist };
 }

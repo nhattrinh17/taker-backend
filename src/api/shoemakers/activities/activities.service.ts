@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
-import { StatusEnum, calculateTimeDifference } from '@common/index';
+import { StatusEnum, calculateTimeDifferenceV2 } from '@common/index';
 import { Trip } from '@entities/index';
 
 import { ActivityDto } from './dto/activity.dto';
@@ -66,7 +66,7 @@ export class ActivitiesService {
       return trips.map((trip) => {
         return {
           ...trip,
-          distance: calculateTimeDifference(
+          distance: calculateTimeDifferenceV2(
             Number(trip.shoemaker.latitude) || 0,
             Number(trip.shoemaker.longitude) || 0,
             Number(trip.latitude),
@@ -75,6 +75,7 @@ export class ActivitiesService {
         };
       });
     } catch (e) {
+      console.log('🚀 ~ ActivitiesService ~ inProgress ~ e:', e);
       throw new BadRequestException(e.message);
     }
   }
