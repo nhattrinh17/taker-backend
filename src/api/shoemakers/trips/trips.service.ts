@@ -1,34 +1,16 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
 import { QUEUE_NAMES } from '@common/constants/app.constant';
-import {
-  NOTIFICATIONS_SCREEN,
-  SHOEMAKER,
-} from '@common/constants/notifications.constant';
+import { NOTIFICATIONS_SCREEN, SHOEMAKER } from '@common/constants/notifications.constant';
 import { PaymentEnum, PaymentStatusEnum } from '@common/enums/payment.enum';
-import {
-  TransactionSource,
-  TransactionStatus,
-  TransactionType,
-} from '@common/enums/transaction.enum';
+import { TransactionSource, TransactionStatus, TransactionType } from '@common/enums/transaction.enum';
 import { orderId as generateOrderId } from '@common/helpers/index';
 import { DEFAULT_MESSAGES, PartialStatusEnum, StatusEnum } from '@common/index';
 import { FirebaseService } from '@common/services/firebase.service';
-import {
-  Notification,
-  Shoemaker,
-  Transaction,
-  Trip,
-  Wallet,
-  WalletLog,
-} from '@entities/index';
+import { Notification, Shoemaker, Transaction, Trip, Wallet, WalletLog } from '@entities/index';
 import { GatewaysService } from '@gateways/gateways.service';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -60,10 +42,7 @@ export class TripsService {
    * @param dto UpdateTripDto
    * @returns Promise<string>
    */
-  async updateTripStatus(
-    userId: string,
-    { tripId, status, images }: UpdateTripDto,
-  ) {
+  async updateTripStatus(userId: string, { tripId, status, images }: UpdateTripDto) {
     try {
       // check if the trip exists
       const trip = await this.tripRepository.findOneBy({
@@ -73,10 +52,7 @@ export class TripsService {
       if (!trip) throw new NotFoundException('Trip not found');
 
       const socket = await this.gateWaysService.getSocket(trip.customerId);
-      if (
-        status === PartialStatusEnum.MEETING &&
-        trip.status === StatusEnum.ACCEPTED
-      ) {
+      if (status === PartialStatusEnum.MEETING && trip.status === StatusEnum.ACCEPTED) {
         await this.tripRepository.update(tripId, {
           status: StatusEnum.MEETING,
         });
@@ -87,10 +63,7 @@ export class TripsService {
           });
         }
         return DEFAULT_MESSAGES.SUCCESS;
-      } else if (
-        status === PartialStatusEnum.INPROGRESS &&
-        trip.status === StatusEnum.MEETING
-      ) {
+      } else if (status === PartialStatusEnum.INPROGRESS && trip.status === StatusEnum.MEETING) {
         await this.tripRepository.update(tripId, {
           status: StatusEnum.INPROGRESS,
           receiveImages: images || [],
@@ -102,10 +75,7 @@ export class TripsService {
           });
         }
         return DEFAULT_MESSAGES.SUCCESS;
-      } else if (
-        status === PartialStatusEnum.COMPLETED &&
-        trip.status === StatusEnum.INPROGRESS
-      ) {
+      } else if (status === PartialStatusEnum.COMPLETED && trip.status === StatusEnum.INPROGRESS) {
         // update trip status to completed
         await this.tripRepository.update(tripId, {
           status: StatusEnum.COMPLETED,
@@ -201,11 +171,7 @@ export class TripsService {
             description: `Trừ tiền từ đơn hàng ${trip.orderId}`,
           });
           // Create notification for shoemaker
-          const randomContent = SHOEMAKER.generateWalletMessage(
-            amount,
-            '-',
-            trip.orderId,
-          );
+          const randomContent = SHOEMAKER.generateWalletMessage(amount, '-', trip.orderId);
           this.notificationQueue.add(
             'update-wallet',
             {
@@ -215,11 +181,7 @@ export class TripsService {
             { removeOnComplete: true },
           );
         });
-      } else if (
-        trip.paymentMethod === PaymentEnum.DIGITAL_WALLET ||
-        (trip.paymentMethod === PaymentEnum.CREDIT_CARD &&
-          trip.paymentStatus === PaymentStatusEnum.PAID)
-      ) {
+      } else if (trip.paymentMethod === PaymentEnum.DIGITAL_WALLET || (trip.paymentMethod === PaymentEnum.CREDIT_CARD && trip.paymentStatus === PaymentStatusEnum.PAID)) {
         await this.dataSource.transaction(async (manager) => {
           // Update wallet for shoemaker
           const wallet = await manager.findOne(Wallet, {
@@ -266,11 +228,7 @@ export class TripsService {
           });
 
           // Create notification for shoemaker
-          const randomContent = SHOEMAKER.generateWalletMessage(
-            amount,
-            '+',
-            trip.orderId,
-          );
+          const randomContent = SHOEMAKER.generateWalletMessage(amount, '+', trip.orderId);
           this.notificationQueue.add(
             'update-wallet',
             {
@@ -309,15 +267,13 @@ export class TripsService {
           rating: rating?.rating,
           comment: rating?.comment,
         },
-        services: services.map(
-          ({ price, discountPrice, discount, quantity, name }) => ({
-            price,
-            discountPrice,
-            discount,
-            quantity,
-            name,
-          }),
-        ),
+        services: services.map(({ price, discountPrice, discount, quantity, name }) => ({
+          price,
+          discountPrice,
+          discount,
+          quantity,
+          name,
+        })),
         customer: {
           name: customer?.fullName,
           phone: customer?.phone,

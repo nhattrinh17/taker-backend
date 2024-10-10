@@ -1,9 +1,5 @@
 import { InjectQueue } from '@nestjs/bull';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as Sentry from '@sentry/node';
@@ -13,40 +9,11 @@ import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { DataSource, In, Repository } from 'typeorm';
 
-import {
-  DEFAULT_MESSAGES,
-  PaymentEnum,
-  PaymentStatusEnum,
-  QUEUE_NAMES,
-  ShareType,
-  StatusEnum,
-  TransactionSource,
-  TransactionStatus,
-  TransactionType,
-  createPaymentUrl,
-  orderId as generateOrderId,
-  refund,
-} from '@common/index';
-import {
-  Customer,
-  Notification,
-  RatingSummary,
-  Service,
-  Shoemaker,
-  Transaction,
-  Trip,
-  TripCancellation,
-  TripRating,
-  Wallet,
-  WalletLog,
-} from '@entities/index';
+import { DEFAULT_MESSAGES, PaymentEnum, PaymentStatusEnum, QUEUE_NAMES, ShareType, StatusEnum, TransactionSource, TransactionStatus, TransactionType, createPaymentUrl, orderId as generateOrderId, refund } from '@common/index';
+import { Customer, Notification, RatingSummary, Service, Shoemaker, Transaction, Trip, TripCancellation, TripRating, Wallet, WalletLog } from '@entities/index';
 import { GatewaysService } from '@gateways/gateways.service';
 
-import {
-  CUSTOMERS,
-  NOTIFICATIONS_SCREEN,
-  SHOEMAKER,
-} from '@common/constants/notifications.constant';
+import { CUSTOMERS, NOTIFICATIONS_SCREEN, SHOEMAKER } from '@common/constants/notifications.constant';
 import { FirebaseService } from '@common/services/firebase.service';
 import { CancelTripDto, CreateTripDto, RateTripDto } from './dto';
 
@@ -94,12 +61,7 @@ export class TripsService {
       // If customer has one trip that is not completed and searching, throw an error
       const currentTrip = await this.tripRepository.findOneBy({
         customerId: userId,
-        status: In([
-          StatusEnum.SEARCHING,
-          StatusEnum.ACCEPTED,
-          StatusEnum.INPROGRESS,
-          StatusEnum.MEETING,
-        ]),
+        status: In([StatusEnum.SEARCHING, StatusEnum.ACCEPTED, StatusEnum.INPROGRESS, StatusEnum.MEETING]),
       });
 
       if (currentTrip) {
@@ -192,21 +154,15 @@ export class TripsService {
           // Write transaction
           let orderId = generateOrderId();
 
-          let foundTransaction = await queryRunner.manager.findOneBy(
-            Transaction,
-            {
-              orderId,
-            },
-          );
+          let foundTransaction = await queryRunner.manager.findOneBy(Transaction, {
+            orderId,
+          });
 
           while (foundTransaction) {
             orderId = generateOrderId();
-            foundTransaction = await queryRunner.manager.findOneBy(
-              Transaction,
-              {
-                orderId,
-              },
-            );
+            foundTransaction = await queryRunner.manager.findOneBy(Transaction, {
+              orderId,
+            });
           }
 
           await queryRunner.manager.save(Transaction, {
@@ -232,11 +188,7 @@ export class TripsService {
           await queryRunner.manager.save(Notification, {
             customerId: userId,
             title: 'TAKER',
-            content: CUSTOMERS.generateWalletMessage(
-              trip.totalPrice,
-              '-',
-              trip.orderId,
-            ).mes03,
+            content: CUSTOMERS.generateWalletMessage(trip.totalPrice, '-', trip.orderId).mes03,
             data: JSON.stringify({
               screen: NOTIFICATIONS_SCREEN.REQUEST_TRIP,
             }),
@@ -249,11 +201,7 @@ export class TripsService {
               .send({
                 token: customer.fcmToken,
                 title: 'TAKER',
-                body: CUSTOMERS.generateWalletMessage(
-                  trip.totalPrice,
-                  '-',
-                  trip.orderId,
-                ).mes03,
+                body: CUSTOMERS.generateWalletMessage(trip.totalPrice, '-', trip.orderId).mes03,
                 data: { screen: NOTIFICATIONS_SCREEN.REQUEST_TRIP },
               })
               .catch((e) => {
@@ -314,10 +262,7 @@ export class TripsService {
 
       if (!trip) throw new BadRequestException('Invalid trip');
 
-      if (
-        trip.status !== StatusEnum.SEARCHING &&
-        trip.status !== StatusEnum.ACCEPTED
-      ) {
+      if (trip.status !== StatusEnum.SEARCHING && trip.status !== StatusEnum.ACCEPTED) {
         throw new BadRequestException('Trip status is not valid');
       }
       // Start transaction
@@ -355,21 +300,15 @@ export class TripsService {
           // Write transaction
           let orderId = generateOrderId();
 
-          let foundTransaction = await queryRunner.manager.findOneBy(
-            Transaction,
-            {
-              orderId,
-            },
-          );
+          let foundTransaction = await queryRunner.manager.findOneBy(Transaction, {
+            orderId,
+          });
 
           while (foundTransaction) {
             orderId = generateOrderId();
-            foundTransaction = await queryRunner.manager.findOneBy(
-              Transaction,
-              {
-                orderId,
-              },
-            );
+            foundTransaction = await queryRunner.manager.findOneBy(Transaction, {
+              orderId,
+            });
           }
           await queryRunner.manager.save(Transaction, {
             amount: trip.totalPrice,
@@ -395,11 +334,7 @@ export class TripsService {
           await queryRunner.manager.save(Notification, {
             customerId: userId,
             title: 'TAKER',
-            content: CUSTOMERS.generateWalletMessage(
-              trip.totalPrice,
-              '+',
-              trip.orderId,
-            ).mes02,
+            content: CUSTOMERS.generateWalletMessage(trip.totalPrice, '+', trip.orderId).mes02,
             data: JSON.stringify({
               screen: NOTIFICATIONS_SCREEN.WALLET,
             }),
@@ -412,11 +347,7 @@ export class TripsService {
               .send({
                 token: customer.fcmToken,
                 title: 'TAKER',
-                body: CUSTOMERS.generateWalletMessage(
-                  trip.totalPrice,
-                  '+',
-                  trip.orderId,
-                ).mes02,
+                body: CUSTOMERS.generateWalletMessage(trip.totalPrice, '+', trip.orderId).mes02,
                 data: { screen: NOTIFICATIONS_SCREEN.WALLET },
               })
               .catch((e) => {
@@ -452,11 +383,7 @@ export class TripsService {
                   await this.notificationRepository.save({
                     customerId: userId,
                     title: 'TAKER',
-                    content: CUSTOMERS.generateWalletMessage(
-                      trip.totalPrice,
-                      '+',
-                      trip.orderId,
-                    ).mes02,
+                    content: CUSTOMERS.generateWalletMessage(trip.totalPrice, '+', trip.orderId).mes02,
                     data: JSON.stringify({
                       screen: NOTIFICATIONS_SCREEN.WALLET,
                     }),
@@ -469,11 +396,7 @@ export class TripsService {
                       .send({
                         token: customer.fcmToken,
                         title: 'TAKER',
-                        body: CUSTOMERS.generateWalletMessage(
-                          trip.totalPrice,
-                          '+',
-                          trip.orderId,
-                        ).mes02,
+                        body: CUSTOMERS.generateWalletMessage(trip.totalPrice, '+', trip.orderId).mes02,
                         data: { screen: NOTIFICATIONS_SCREEN.WALLET },
                       })
                       .catch((e) => {
@@ -490,10 +413,7 @@ export class TripsService {
               })
               .catch((e) => {
                 console.log('Error while refunding', e);
-                Sentry.captureMessage(
-                  `Error while refunding ${e?.message}`,
-                  'error',
-                );
+                Sentry.captureMessage(`Error while refunding ${e?.message}`, 'error');
               });
           }
         }
@@ -523,14 +443,11 @@ export class TripsService {
             });
 
             // Send notification to shoemaker
-            const shoemakerSocket = await this.gateWaysService.getSocket(
-              shoemaker.id,
-            );
+            const shoemakerSocket = await this.gateWaysService.getSocket(shoemaker.id);
             if (shoemakerSocket) {
               shoemakerSocket.emit('trip-update', {
                 type: 'customer-cancel',
-                message:
-                  'Trip has been canceled by the customer. You can now accept new trips.',
+                message: 'Trip has been canceled by the customer. You can now accept new trips.',
               });
             }
             const socket = await this.gateWaysService.getSocket(userId);
@@ -594,8 +511,7 @@ export class TripsService {
           count: 1,
         });
       } else {
-        const newAverage =
-          (summary.average * summary.count + dto.rating) / (summary.count + 1);
+        const newAverage = (summary.average * summary.count + dto.rating) / (summary.count + 1);
         await this.ratingSummaryRepository.update(summary.id, {
           average: newAverage,
           count: summary.count + 1,
@@ -655,15 +571,13 @@ export class TripsService {
           rating: rating?.rating,
           comment: rating?.comment,
         },
-        services: services.map(
-          ({ price, discountPrice, discount, quantity, name }) => ({
-            price,
-            discountPrice,
-            discount,
-            quantity,
-            name,
-          }),
-        ),
+        services: services.map(({ price, discountPrice, discount, quantity, name }) => ({
+          price,
+          discountPrice,
+          discount,
+          quantity,
+          name,
+        })),
         shoemaker: {
           name: shoemaker?.fullName,
           phone: shoemaker?.phone,
