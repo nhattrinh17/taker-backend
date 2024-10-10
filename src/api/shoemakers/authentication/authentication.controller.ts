@@ -1,35 +1,8 @@
-import {
-  CurrentUser,
-  IShoemaker,
-  ShoemakersAuthGuard,
-  ValidationPipe,
-} from '@common/index';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  Query,
-  UseGuards,
-  Version,
-} from '@nestjs/common';
+import { CurrentUser, IShoemaker, ShoemakersAuthGuard, ValidationPipe } from '@common/index';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, UseGuards, Version } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 
-import {
-  CreateShoemakerDto,
-  ForgotShoemakerDto,
-  LoginShoemakerDto,
-  NewPasswordDto,
-  UpdateAvatarDto,
-  UpdateInformationDto,
-  VerifyOtpDto,
-  VerifyPhoneNumberDto,
-} from './dto';
+import { CreateShoemakerDto, ForgotShoemakerDto, LoginShoemakerDto, NewPasswordDto, UpdateAvatarDto, UpdateFCMTokenUserDto, UpdateInformationDto, VerifyOtpDto, VerifyPhoneNumberDto } from './dto';
 
 @Controller()
 export class AuthenticationController {
@@ -85,6 +58,14 @@ export class AuthenticationController {
     return this.service.sendSms(dto.phone);
   }
 
+  // Using when user cannot activate
+  @HttpCode(HttpStatus.OK)
+  @Version('1')
+  @Post('set-fcm-token')
+  updateFCMToken(@Body(ValidationPipe) dto: UpdateFCMTokenUserDto) {
+    return this.service.updateFCMToken(dto);
+  }
+
   @UseGuards(ShoemakersAuthGuard)
   @Version('1')
   @HttpCode(HttpStatus.OK)
@@ -96,40 +77,28 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   @Version('1')
   @Post(':id/new-password')
-  newPassword(
-    @Param('id', ParseUUIDPipe) userId: string,
-    @Body(ValidationPipe) dto: NewPasswordDto,
-  ) {
+  newPassword(@Param('id', ParseUUIDPipe) userId: string, @Body(ValidationPipe) dto: NewPasswordDto) {
     return this.service.newPassword(userId, dto);
   }
 
   @HttpCode(HttpStatus.OK)
   @Version('1')
   @Post(':id/update-information')
-  updateInformation(
-    @Param('id', ParseUUIDPipe) userId: string,
-    @Body(ValidationPipe) dto: UpdateInformationDto,
-  ) {
+  updateInformation(@Param('id', ParseUUIDPipe) userId: string, @Body(ValidationPipe) dto: UpdateInformationDto) {
     return this.service.updateInformation(userId, dto);
   }
 
   @HttpCode(HttpStatus.OK)
   @Version('1')
   @Post(':id/update-avatar')
-  updateAvatar(
-    @Param('id', ParseUUIDPipe) userId: string,
-    @Body(ValidationPipe) dto: UpdateAvatarDto,
-  ) {
+  updateAvatar(@Param('id', ParseUUIDPipe) userId: string, @Body(ValidationPipe) dto: UpdateAvatarDto) {
     return this.service.updateAvatar(userId, dto);
   }
 
   @HttpCode(HttpStatus.OK)
   @Version('1')
   @Get(':id/get-signed-url')
-  getSignedUrl(
-    @Query('fileName') key: string,
-    @Param('id', ParseUUIDPipe) userId: string,
-  ) {
+  getSignedUrl(@Query('fileName') key: string, @Param('id', ParseUUIDPipe) userId: string) {
     return this.service.getSignedFileUrl(userId, key);
   }
 

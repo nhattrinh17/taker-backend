@@ -71,3 +71,11 @@ export class UpdateAvatarDto {
   @IsString()
   avatar: string;
 }
+
+export class UpdateFCMTokenUserDto {
+  @IsString()
+  userId: string;
+
+  @IsString()
+  fcmToken: string;
+}

@@ -1,10 +1,6 @@
 import RedisService from '@common/services/redis.service';
 import { Option, Shoemaker } from '@entities/index';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,32 +10,10 @@ import { Repository } from 'typeorm';
 /**
  * Import dto
  */
-import {
-  CreateShoemakerDto,
-  ForgotShoemakerDto,
-  LoginShoemakerDto,
-  NewPasswordDto,
-  UpdateAvatarDto,
-  UpdateInformationDto,
-  VerifyOtpDto,
-  VerifyPhoneNumberDto,
-} from './dto';
+import { CreateShoemakerDto, ForgotShoemakerDto, LoginShoemakerDto, NewPasswordDto, UpdateAvatarDto, UpdateFCMTokenUserDto, UpdateInformationDto, VerifyOtpDto, VerifyPhoneNumberDto } from './dto';
 
 import { StepEnum } from '@common/enums/step.enum';
-import {
-  AppType,
-  DEFAULT_MESSAGES,
-  OPTIONS,
-  S3Service,
-  ShoemakerStatusEnum,
-  SmsService,
-  StringeeService,
-  generateHashedPassword,
-  generateOTP,
-  makePhoneNumber,
-  otpToText,
-  validPassword,
-} from '@common/index';
+import { AppType, DEFAULT_MESSAGES, OPTIONS, S3Service, ShoemakerStatusEnum, SmsService, StringeeService, generateHashedPassword, generateOTP, makePhoneNumber, otpToText, validPassword } from '@common/index';
 import { REDIS_PREFIX } from './constants';
 
 @Injectable()
@@ -174,10 +148,7 @@ export class AuthenticationService {
   async newPassword(userId: string, dto: NewPasswordDto) {
     try {
       const user = await this.loadUser(userId);
-      if (
-        user.status === ShoemakerStatusEnum.PENDING &&
-        user.step !== StepEnum.NEW_PASSWORD
-      ) {
+      if (user.status === ShoemakerStatusEnum.PENDING && user.step !== StepEnum.NEW_PASSWORD) {
         throw new BadRequestException('Invalid step');
       }
 
@@ -215,11 +186,7 @@ export class AuthenticationService {
         throw new BadRequestException('Invalid phone or password');
       }
       // Check if user is verified and active
-      if (
-        user.status !== ShoemakerStatusEnum.ACTIVE ||
-        !user.isVerified ||
-        user.step !== StepEnum.COMPLETED
-      ) {
+      if (user.status !== ShoemakerStatusEnum.ACTIVE || !user.isVerified || user.step !== StepEnum.COMPLETED) {
         // If step = OTP, make stringee call
         if (user.step === StepEnum.OTP) {
           // Generate OTP
@@ -283,14 +250,10 @@ export class AuthenticationService {
       if (dto.dateOfBirth) updateData['dateOfBirth'] = dto.dateOfBirth;
       if (dto.identityCard) updateData['identityCard'] = dto.identityCard;
       if (dto.placeOfOrigin) updateData['placeOfOrigin'] = dto.placeOfOrigin;
-      if (dto.placeOfResidence)
-        updateData['placeOfResidence'] = dto.placeOfResidence;
-      if (dto.frontOfCardImage)
-        updateData['frontOfCardImage'] = dto.frontOfCardImage;
-      if (dto.backOfCardImage)
-        updateData['backOfCardImage'] = dto.backOfCardImage;
-      if (dto.workRegistrationArea)
-        updateData['workRegistrationArea'] = dto.workRegistrationArea;
+      if (dto.placeOfResidence) updateData['placeOfResidence'] = dto.placeOfResidence;
+      if (dto.frontOfCardImage) updateData['frontOfCardImage'] = dto.frontOfCardImage;
+      if (dto.backOfCardImage) updateData['backOfCardImage'] = dto.backOfCardImage;
+      if (dto.workRegistrationArea) updateData['workRegistrationArea'] = dto.workRegistrationArea;
       if (dto.maritalStatus) updateData['maritalStatus'] = dto.maritalStatus;
       if (dto.accountNumber) updateData['accountNumber'] = dto.accountNumber;
       if (dto.accountName) updateData['accountName'] = dto.accountName;
@@ -410,11 +373,7 @@ export class AuthenticationService {
       const decoded: any = this.jwtService.decode(token);
       const key = `${REDIS_PREFIX}${decoded.sub}`;
       if (decoded.exp) {
-        await this.redis.setExpire(
-          key,
-          'true',
-          Math.floor(decoded.exp - Date.now() / 1000),
-        );
+        await this.redis.setExpire(key, 'true', Math.floor(decoded.exp - Date.now() / 1000));
       } else {
         await this.redis.set(key, 'true');
       }
@@ -485,6 +444,20 @@ export class AuthenticationService {
       });
 
       return res;
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async updateFCMToken(dto: UpdateFCMTokenUserDto) {
+    try {
+      const user = await this.loadUser(dto.userId);
+      if (user.step !== StepEnum.REGISTER_INFO_SUCCESS) {
+        throw new BadRequestException('Invalid step');
+      }
+      await this.userRepository.update(user.id, { fcmToken: dto.fcmToken });
+
+      return DEFAULT_MESSAGES.SUCCESS;
     } catch (e) {
       throw new BadRequestException(e.message);
     }

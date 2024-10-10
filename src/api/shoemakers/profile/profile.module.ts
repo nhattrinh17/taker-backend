@@ -5,11 +5,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { FirebaseService } from '@common/services/firebase.service';
-import {
-  UpdateLocationConsumer,
-  UpdateStatusConsumer,
-  WorkStatusConsumer,
-} from './consumers';
+import { UpdateLocationConsumer, UpdateStatusConsumer, WorkStatusConsumer } from './consumers';
 import { UpdateLocationListener, UpdateStatusListener } from './listeners';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
@@ -26,15 +22,6 @@ import { ProfileService } from './profile.service';
     ),
   ],
   controllers: [ProfileController],
-  providers: [
-    ProfileService,
-    S3Service,
-    UpdateLocationListener,
-    UpdateLocationConsumer,
-    UpdateStatusListener,
-    UpdateStatusConsumer,
-    WorkStatusConsumer,
-    FirebaseService,
-  ],
+  providers: [ProfileService, S3Service, UpdateLocationListener, UpdateLocationConsumer, UpdateStatusListener, UpdateStatusConsumer, WorkStatusConsumer, FirebaseService],
 })
 export class ProfileModule {}
