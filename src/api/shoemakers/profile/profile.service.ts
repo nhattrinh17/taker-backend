@@ -1,18 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { StatusEnum } from '@common/enums/status.enum';
-import {
-  DEFAULT_MESSAGES,
-  QUEUE_NAMES,
-  S3Service,
-  generateHashedPassword,
-} from '@common/index';
+import { DEFAULT_MESSAGES, QUEUE_NAMES, S3Service, generateHashedPassword } from '@common/index';
 import { Shoemaker, Trip } from '@entities/index';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -176,11 +167,7 @@ export class ProfileService {
       // If user work status is false, send notification to user after 5 minutes
       if (user.isOn) {
         // Send notification to user after 5 minutes
-        this.queue.add(
-          'work-status',
-          { userId: user.id },
-          { delay: 5 * 60 * 1000, removeOnComplete: true },
-        );
+        this.queue.add('work-status', { userId: user.id }, { delay: 5 * 60 * 1000, removeOnComplete: true });
       }
       return DEFAULT_MESSAGES.SUCCESS;
     } catch (e) {

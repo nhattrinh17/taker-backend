@@ -28,4 +28,7 @@ export class Service extends BaseEntity {
 
   @Column({ type: 'double', default: 0.8 })
   share: number;
+
+  @Column({ default: false })
+  experienceOnce: boolean;
 }

@@ -3,17 +3,17 @@ import { Shoemaker } from '@entities/shoemaker.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import {
-  CountShoemakerDto,
-  SearchShoemakerDto,
-} from './dto/search-shoemakers.dto';
+import { CountShoemakerDto, SearchShoemakerDto } from './dto/search-shoemakers.dto';
 import { UpdateInformationDto } from './dto/update-shoemakers.dto';
+import { ShoemakerStatusEnum } from '@common/enums';
+import { FirebaseService } from '@common/services';
 
 @Injectable()
 export class ShoemakersService {
   constructor(
     @InjectRepository(Shoemaker)
     private readonly shoemakerRepository: Repository<Shoemaker>,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   /**
@@ -21,32 +21,16 @@ export class ShoemakersService {
    * @param params: SearchShoemakerDto
    * @returns Return a list of shoemakers
    */
-  async findList({
-    take,
-    skip,
-    status,
-    start,
-    end,
-    keyword,
-  }: SearchShoemakerDto) {
+  async findList({ take, skip, status, start, end, keyword }: SearchShoemakerDto) {
     try {
       const dates = getDatesByWeekOrMonth('custom', start, end);
 
       const query = this.shoemakerRepository.createQueryBuilder('s');
-      query.select([
-        's.id',
-        's.phone',
-        's.status',
-        's.fullName',
-        's.createdAt',
-      ]);
+      query.select(['s.id', 's.phone', 's.status', 's.fullName', 's.createdAt']);
       // Use addSelect to include the subquery for incomeSum
       query.addSelect((subQuery) => {
         return subQuery
-          .select(
-            "CONCAT(SUM(t.income), ',', COUNT(t.id))",
-            'incomeSumAndCount',
-          )
+          .select("CONCAT(SUM(t.income), ',', COUNT(t.id))", 'incomeSumAndCount')
           .from('trips', 't')
           .where("t.shoemakerId = s.id AND t.status = 'COMPLETED'")
           .andWhere({ date: In(dates) });
@@ -80,9 +64,7 @@ export class ShoemakersService {
 
       // Manually map the results to include incomeSum in your entities
       const items = entities.map((entity, index) => {
-        const incomeSumAndCount = raw[index]?.incomeSumAndCount
-          ?.split(',')
-          ?.map(Number) ?? [0, 0];
+        const incomeSumAndCount = raw[index]?.incomeSumAndCount?.split(',')?.map(Number) ?? [0, 0];
         const incomeSum = incomeSumAndCount[0]; // Default to 0 if null
         const count = incomeSumAndCount[1]; //
         return {
@@ -134,27 +116,15 @@ export class ShoemakersService {
       query.where({ id });
       // TODO Should make table to store income and count like rating_summary
       query.addSelect((subQuery) => {
-        return subQuery
-          .select(
-            "CONCAT(SUM(t.income), ',', COUNT(t.id))",
-            'incomeSumAndCount',
-          )
-          .from('trips', 't')
-          .where("t.shoemakerId = s.id AND t.status = 'COMPLETED'");
+        return subQuery.select("CONCAT(SUM(t.income), ',', COUNT(t.id))", 'incomeSumAndCount').from('trips', 't').where("t.shoemakerId = s.id AND t.status = 'COMPLETED'");
       }, 'incomeSumAndCount');
 
       query.addSelect((subQuery) => {
-        return subQuery
-          .select('COUNT(tc.shoemakerId)', 'tripCancellationCount')
-          .from('trip_cancellations', 'tc')
-          .where('tc.shoemakerId = s.id');
+        return subQuery.select('COUNT(tc.shoemakerId)', 'tripCancellationCount').from('trip_cancellations', 'tc').where('tc.shoemakerId = s.id');
       }, 'tripCancellationCount');
 
       query.addSelect((subQuery) => {
-        return subQuery
-          .select('COUNT(ss.id)', 'referralCount')
-          .from('shoemakers', 'ss')
-          .where('ss.referralCode = s.phone');
+        return subQuery.select('COUNT(ss.id)', 'referralCount').from('shoemakers', 'ss').where('ss.referralCode = s.phone');
       }, 'referralCount');
 
       query.leftJoinAndSelect('s.wallet', 'wallet');
@@ -164,9 +134,7 @@ export class ShoemakersService {
       const { entities, raw } = await query.getRawAndEntities();
       // Manually map the results to include incomeSum in your entities
       const items = entities.map((entity, index) => {
-        const incomeSumAndCount = raw[index]?.incomeSumAndCount
-          ?.split(',')
-          ?.map(Number) ?? [0, 0];
+        const incomeSumAndCount = raw[index]?.incomeSumAndCount?.split(',')?.map(Number) ?? [0, 0];
         const incomeSum = incomeSumAndCount[0];
         const count = incomeSumAndCount[1];
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -199,7 +167,22 @@ export class ShoemakersService {
    */
   async update(id: string, data: UpdateInformationDto) {
     try {
+      const shoemaker = await this.shoemakerRepository.findOne({ where: { id: id } });
+      if (!shoemaker) {
+        throw new Error('Shoemaker not found');
+      }
       await this.shoemakerRepository.update(id, data);
+      // Send notification when shoemaker is approved
+      if (data.status == ShoemakerStatusEnum.ACTIVE && shoemaker.fcmToken && shoemaker.status !== ShoemakerStatusEnum.ACTIVE) {
+        await this.firebaseService.send({
+          title: 'Taker',
+          body: 'Tài khoản của bạn đã được phê duyệt hãy vào lại app để có thể nhận đơn ngay',
+          token: shoemaker.fcmToken,
+          data: {
+            screen: 'UploadAvatar',
+          },
+        });
+      }
       return 'Success';
     } catch (e) {
       throw new BadRequestException(e?.message);

@@ -7,9 +7,7 @@ import { ListServicesDto } from './dto';
 
 @Injectable()
 export class ServicesService {
-  constructor(
-    @InjectRepository(Service) private readonly serviceRep: Repository<Service>,
-  ) {}
+  constructor(@InjectRepository(Service) private readonly serviceRep: Repository<Service>) {}
 
   /**
    * Function to retrieve a list of services
@@ -19,7 +17,7 @@ export class ServicesService {
   index({ take, skip }: ListServicesDto): Promise<Service[]> {
     try {
       return this.serviceRep.find({
-        select: ['name', 'price', 'discountPrice', 'discount', 'id', 'icon'],
+        select: ['name', 'price', 'discountPrice', 'discount', 'id', 'icon', 'experienceOnce'],
         take,
         skip,
         order: { createdAt: 'DESC' },

@@ -1,17 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Customer } from '@entities/index';
-import {
-  DEFAULT_MESSAGES,
-  S3Service,
-  generateHashedPassword,
-} from '@common/index';
+import { DEFAULT_MESSAGES, S3Service, generateHashedPassword } from '@common/index';
 
 import { UpdateProfileDto, FcmTokenDto, ReferralDto } from './dto/profile.dto';
 
@@ -141,6 +133,7 @@ export class ProfileService {
         bankName: user.bankName,
         accountNumber: user.bankAccountNumber,
         accountName: user.bankAccountName,
+        newUser: user.newUser,
       };
     } catch (e) {
       throw new BadRequestException(e.message);

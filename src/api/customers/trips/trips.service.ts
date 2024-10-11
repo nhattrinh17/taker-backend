@@ -53,7 +53,7 @@ export class TripsService {
    * @returns tripId
    */
   async create(dto: CreateTripDto, userId: string, ip?: string) {
-    console.log('🚀 ~ TripsService ~ create ~ dto:', JSON.stringify(dto));
+    // console.log('🚀 ~ TripsService ~ create ~ dto:', JSON.stringify(dto));
     try {
       if (dto.customerId !== userId) {
         throw new BadRequestException('Invalid customer');
@@ -240,6 +240,12 @@ export class TripsService {
             jobId: jobId,
           },
         );
+      }
+
+      // Check customer and update status newUser
+      const customer = await this.customerRepository.findOne({ where: { id: userId } });
+      if (customer.newUser) {
+        await this.customerRepository.update(customer.id, { newUser: false });
       }
       return { tripId: trip.id, paymentUrl };
     } catch (e) {

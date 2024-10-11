@@ -22,10 +22,8 @@ export const AppType = {
   shoemakers: 'shoemakers',
 };
 
-export const LATITUDE_PATTERN =
-  /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/;
-export const LONGITUDE_PATTERN =
-  /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/;
+export const LATITUDE_PATTERN = /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/;
+export const LONGITUDE_PATTERN = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/;
 
 export const DEFAULT_MESSAGES = {
   SUCCESS: 'SUCCESS',
@@ -125,6 +123,7 @@ export interface INotificationPayload {
   title: string;
   body: string;
   data?: { [key: string]: string };
+  sound?: string;
 }
 
 export type IPeriod = 'week' | 'month' | 'today' | 'custom';

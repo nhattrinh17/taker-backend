@@ -21,7 +21,7 @@ export class FirebaseService {
     });
   }
 
-  send({ token, title, body, data = {} }: INotificationPayload) {
+  send({ token, title, body, data = {}, sound }: INotificationPayload) {
     const message: admin.messaging.Message = {
       notification: {
         title,
@@ -31,7 +31,7 @@ export class FirebaseService {
       data,
       android: {
         notification: {
-          sound: 'taker.wav',
+          sound: sound || 'taker.wav',
           defaultSound: false,
           channelId: 'fast_id',
         },
@@ -39,7 +39,7 @@ export class FirebaseService {
       apns: {
         payload: {
           aps: {
-            sound: 'taker.wav',
+            sound: sound || 'taker.wav',
             defaultSound: false,
           },
         },
@@ -50,61 +50,49 @@ export class FirebaseService {
         .messaging()
         .send(message)
         .then((result) => {
-          this.logger.log(
-            `Send message to device success with token=${token}`,
-            result,
-          );
+          this.logger.log(`Send message to device success with token=${token}`, result);
           resolve({ token, title, body, data });
         })
         .catch((e) => {
           // TODO: Need to handle token outdated
           // https://bard.google.com/chat/cd6c73cc59d0b37b
-          this.logger.error(
-            `Send message to device error ${e.code} with token=${token}`,
-          );
+          this.logger.error(`Send message to device error ${e.code} with token=${token}`);
           reject(e);
         });
     });
   }
 
   sends(payloads: INotificationPayload[]) {
-    const messages: admin.messaging.Message[] = payloads.map(
-      ({ title, token, body, data = {} }) => ({
+    const messages: admin.messaging.Message[] = payloads.map(({ title, token, body, data = {}, sound }) => ({
+      notification: {
+        title,
+        body,
+      },
+      token,
+      data,
+      android: {
         notification: {
-          title,
-          body,
+          sound: sound || 'taker.wav',
+          defaultSound: false,
         },
-        token,
-        data,
-        android: {
-          notification: {
-            sound: 'taker.wav',
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: sound || 'taker.wav',
             defaultSound: false,
           },
         },
-        apns: {
-          payload: {
-            aps: {
-              sound: 'taker.wav',
-              defaultSound: false,
-            },
-          },
-        },
-      }),
-    );
+      },
+    }));
     return new Promise((resolve, reject) => {
       admin
         .messaging()
         .sendEach(messages)
         .then((result) => {
-          this.logger.log(
-            'Send batch message to device success',
-            JSON.stringify(result.responses),
-          );
+          this.logger.log('Send batch message to device success', JSON.stringify(result.responses));
           const { successCount, failureCount, responses } = result;
-          this.logger.log(
-            `Batch successfully sent ${successCount} messages, failed to send ${failureCount} messages`,
-          );
+          this.logger.log(`Batch successfully sent ${successCount} messages, failed to send ${failureCount} messages`);
           const successPayloads: INotificationPayload[] = [];
           const failurePayloads: INotificationPayload[] = [];
 
