@@ -154,7 +154,6 @@ export class TripConsumer {
       query.andWhere({ isTrip: false, isOnline: true, isOn: true });
 
       if (PaymentEnum.OFFLINE_PAYMENT === trip.paymentMethod) {
-        // query.innerJoin('shoemaker.wallet', 'wallet', 'wallet.balance > :balance', { balance: trip.totalPrice });
         //  balance - free >= -100k
         const balanceLimit = -100000;
         query.innerJoin('shoemaker.wallet', 'wallet', 'wallet.balance >= :balance', { balance: balanceLimit + (trip.fee || 0) });
@@ -419,6 +418,7 @@ export class TripConsumer {
                 paymentMethod: trip.paymentMethod,
                 addressNote: trip.addressNote,
                 distance: shoemaker.distance,
+                free: trip.fee,
               });
 
             // Send notification firebase
@@ -451,6 +451,7 @@ export class TripConsumer {
                       paymentMethod: trip?.paymentMethod?.toString() || '',
                       addressNote: trip?.addressNote?.toString() || '',
                       distance: shoemaker?.distance?.toString() || '',
+                      free: trip?.fee.toString() || '0',
                     },
                   })
                   .catch((ee) => {
@@ -475,6 +476,7 @@ export class TripConsumer {
                   customerFullName: customer.fullName,
                   customerPhone: customer.phone,
                   customerAvatar: customer.avatar,
+                  free: trip?.fee.toString() || '0',
                 }),
                 60,
               );
