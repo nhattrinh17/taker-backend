@@ -97,7 +97,7 @@ export class TripConsumer {
           orderId: true,
           addressNote: true,
           paymentStatus: true,
-          fee: true,
+          income: true,
           // services: {
           //   price: true,
           //   discount: true,
@@ -418,7 +418,7 @@ export class TripConsumer {
                 paymentMethod: trip.paymentMethod,
                 addressNote: trip.addressNote,
                 distance: shoemaker.distance,
-                free: trip.fee,
+                income: trip.income,
               });
 
             // Send notification firebase
@@ -451,7 +451,7 @@ export class TripConsumer {
                       paymentMethod: trip?.paymentMethod?.toString() || '',
                       addressNote: trip?.addressNote?.toString() || '',
                       distance: shoemaker?.distance?.toString() || '',
-                      free: trip?.fee.toString() || '0',
+                      income: trip.income.toString() || '0',
                     },
                   })
                   .catch((ee) => {
@@ -476,7 +476,7 @@ export class TripConsumer {
                   customerFullName: customer.fullName,
                   customerPhone: customer.phone,
                   customerAvatar: customer.avatar,
-                  free: trip?.fee.toString() || '0',
+                  income: trip.income,
                 }),
                 60,
               );
@@ -486,12 +486,11 @@ export class TripConsumer {
               // Set a timeout to automatically resolve the promise after 30 seconds
               const timeout = setTimeout(() => {
                 nextShoemakerNotified = true;
-                // Notify the previous shoemaker that the trip has been sent to another shoemaker
-                shoemakerSocket &&
-                  shoemakerSocket.emit('trip-update', {
-                    type: 'timeout',
-                    message: 'Trip has been sent to another shoemaker due to no response',
-                  });
+                // shoemaker auto cancel
+                this.eventEmitter.emit('shoemaker-cancelation', {
+                  tripId: trip.id,
+                  shoemakerId: shoemaker.id,
+                });
                 // Remove the event listener to reduce memory usage
                 shoemakerSocket && shoemakerSocket.off('shoemaker-response-trip', responseListener);
                 resolve(null);
