@@ -16,7 +16,10 @@ jobs:
           command: |
             curl -fsSL https://get.docker.com -o get-docker.sh
             sh get-docker.sh
-
+      # Add SWC dependencies
+      - run:
+          name: Install SWC dependencies
+          command: npm install @swc/cli @swc/core --save-dev
       # Install dependencies
       - run:
           name: Install Dependencies
