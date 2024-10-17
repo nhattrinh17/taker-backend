@@ -8,14 +8,11 @@ export class AppController {
 
   @Get()
   getHello(@ClientIp() ip: string): string {
-    console.log('Get current ip', ip);
     return this.appService.getHello();
   }
 
   @Get('test')
   test() {
-    fetch('https://api.taker.vn/v1/payment/ipn', { method: 'GET' }).catch((e) =>
-      console.log(e),
-    );
+    fetch('https://api.taker.vn/v1/payment/ipn', { method: 'GET' }).catch((e) => console.log(e));
   }
 }
