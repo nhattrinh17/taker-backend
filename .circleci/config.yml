@@ -67,9 +67,9 @@ jobs:
           name: Update ECS Service
           command: |
             aws ecs update-service \
-              --cluster taker-backend-pro \
-              --service taker-backend-service-3 \
-              --force-new-deployment
+            --cluster taker-backend-pro \
+            --service taker-backend-service-3 \
+            --force-new-deployment --no-pager
 
 workflows:
   build_and_deploy:
