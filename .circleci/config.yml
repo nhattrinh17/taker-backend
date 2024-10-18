@@ -67,7 +67,7 @@ jobs:
       - run:
           name: Update ECS Service
           command: |
-            aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
+            aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment --no-cli-pager
 
 workflows:
   build_and_deploy:
