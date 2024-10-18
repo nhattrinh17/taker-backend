@@ -58,6 +58,28 @@ export class TripsService {
       if (dto.customerId !== userId) {
         throw new BadRequestException('Invalid customer');
       }
+      const customerInfo = await this.customerRepository.findOne({
+        where: { id: userId },
+        select: {
+          newUser: true,
+          fcmToken: true,
+        },
+      });
+      // FIXME: Check service experienceOnce(tạm thời sử sụng)
+      if (!customerInfo.newUser) {
+        const checkServices = await Promise.all(
+          dto.services.map((service) =>
+            this.serviceRepository.exists({
+              where: {
+                id: service.serviceId,
+                experienceOnce: true,
+              },
+            }),
+          ),
+        );
+        if (checkServices.includes(true)) throw new BadRequestException('Cannot use service experience once');
+      }
+
       // If customer has one trip that is not completed and searching, throw an error
       const currentTrip = await this.tripRepository.findOneBy({
         customerId: userId,
@@ -193,13 +215,11 @@ export class TripsService {
               screen: NOTIFICATIONS_SCREEN.REQUEST_TRIP,
             }),
           });
-          const customer = await queryRunner.manager.findOneBy(Customer, {
-            id: userId,
-          });
-          if (customer.fcmToken) {
+
+          if (customerInfo.fcmToken) {
             this.firebaseService
               .send({
-                token: customer.fcmToken,
+                token: customerInfo.fcmToken,
                 title: 'TAKER',
                 body: CUSTOMERS.generateWalletMessage(trip.totalPrice, '-', trip.orderId).mes03,
                 data: { screen: NOTIFICATIONS_SCREEN.REQUEST_TRIP },
@@ -243,9 +263,8 @@ export class TripsService {
       }
 
       // Check customer and update status newUser
-      const customer = await this.customerRepository.findOne({ where: { id: userId } });
-      if (customer.newUser) {
-        await this.customerRepository.update(customer.id, { newUser: false });
+      if (customerInfo.newUser) {
+        await this.customerRepository.update(userId, { newUser: false });
       }
       return { tripId: trip.id, paymentUrl };
     } catch (e) {
