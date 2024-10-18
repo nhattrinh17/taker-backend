@@ -63,6 +63,15 @@ jobs:
           command: |
             docker push $DOCKER_REGISTRY_HOST/$REPOSITORY_NAME_SERVICE:latest
 
+      # Update ECS Service to deploy the latest container
+      - run:
+          name: Update ECS Service
+          command: |
+            aws ecs update-service \
+              --cluster $ECS_CLUSTER_NAME \
+              --service $ECS_SERVICE_NAME \
+              --force-new-deployment
+
 workflows:
   build_and_deploy:
     jobs:
