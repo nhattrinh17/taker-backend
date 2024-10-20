@@ -1,6 +1,6 @@
 import { IPeriod } from '@common/constants/app.constant';
 import { Transform, Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsIn, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class FcmTokenDto {
   @IsString()
@@ -45,6 +45,14 @@ export class ReferralDto {
 
 export class MyIncomeDto {
   @IsOptional()
-  @IsIn(['week', 'month', 'today'])
+  @IsIn(['week', 'month', 'today', 'custom'])
   period: IPeriod;
+
+  @IsOptional()
+  @IsString()
+  start: string;
+
+  @IsOptional()
+  @IsString()
+  end: string;
 }

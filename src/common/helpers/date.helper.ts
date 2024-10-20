@@ -1,10 +1,6 @@
 import { IPeriod } from '@common/constants/app.constant';
 
-export const getDatesByWeekOrMonth = (
-  weekOrMonth: IPeriod,
-  start?: Date,
-  end?: Date,
-): string[] => {
+export const getDatesByWeekOrMonth = (weekOrMonth: IPeriod, start?: string, end?: string): string[] => {
   // Changed return type to string[] for consistency with date formatting
   const currentDate = new Date();
   let startDate: Date;
@@ -13,22 +9,19 @@ export const getDatesByWeekOrMonth = (
   switch (weekOrMonth) {
     case 'week':
       const currentDayOfWeek = currentDate.getDay();
+
+      // Nếu là Chủ nhật (day 0), lùi về thứ 2 tuần trước (currentDayOfWeek === 0 thì -6)
+      // Còn nếu là Thứ 2 đến Thứ 7 (day 1-6), lùi về Thứ 2 của tuần hiện tại
       startDate = new Date(currentDate);
-      startDate.setDate(currentDate.getDate() - currentDayOfWeek);
-      endDate = new Date(currentDate);
-      endDate.setDate(currentDate.getDate() + (6 - currentDayOfWeek));
+      startDate.setDate(currentDate.getDate() - (currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1));
+
+      // Ngày kết thúc là Chủ nhật (luôn là 6 ngày sau ngày Thứ 2)
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
       break;
     case 'month':
-      startDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1,
-      );
-      endDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
-        0,
-      );
+      startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
       break;
     case 'today':
       startDate = new Date(currentDate);
@@ -36,9 +29,7 @@ export const getDatesByWeekOrMonth = (
       break;
     case 'custom':
       if (!start || !end) {
-        throw new Error(
-          'For "custom" type, both start and end dates must be provided.',
-        );
+        throw new Error('For "custom" type, both start and end dates must be provided.');
       }
       startDate = new Date(start);
       endDate = new Date(end);
@@ -54,17 +45,11 @@ export const getDatesByWeekOrMonth = (
       }
       break;
     default:
-      throw new Error(
-        'Invalid option. Please choose "week", "month", or "today".',
-      );
+      throw new Error('Invalid option. Please choose "week", "month", or "today".');
   }
 
   const dates = [];
-  for (
-    let date = new Date(startDate);
-    date <= endDate;
-    date.setDate(date.getDate() + 1)
-  ) {
+  for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
     dates.push(new Date(date).toISOString().split('T')[0]);
   }
 

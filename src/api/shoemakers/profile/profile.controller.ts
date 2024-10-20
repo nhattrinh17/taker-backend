@@ -54,8 +54,8 @@ export class ProfileController {
   @HttpCode(HttpStatus.OK)
   @Version('1')
   @Get('my-income')
-  getIncome(@CurrentUser() { sub }: IShoemaker, @Query(ValidationPipe) { period }: MyIncomeDto) {
-    return this.service.getMyIncome(sub, period);
+  getIncome(@CurrentUser() { sub }: IShoemaker, @Query(ValidationPipe) { period, end, start }: MyIncomeDto) {
+    return this.service.getMyIncome(sub, period, start, end);
   }
 
   @HttpCode(HttpStatus.OK)

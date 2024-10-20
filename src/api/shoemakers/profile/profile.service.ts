@@ -195,10 +195,10 @@ export class ProfileService {
    * @param userId string
    * @returns my income
    */
-  async getMyIncome(userId: string, period: IPeriod) {
+  async getMyIncome(userId: string, period: IPeriod, start?: string, end?: string) {
     try {
       const user = await this.loadUser(userId);
-      const dates = getDatesByWeekOrMonth(period);
+      const dates = getDatesByWeekOrMonth(period, start, end);
 
       const trips = await this.tripRepository.find({
         where: {

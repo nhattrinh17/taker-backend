@@ -17,3 +17,5 @@ export * from './trip-service.entity';
 export * from './trip.entity';
 export * from './wallet-log.entity';
 export * from './wallet.entity';
+export * from './voucher.entity';
+export * from './customer-voucher.entity';
