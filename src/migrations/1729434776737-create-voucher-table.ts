@@ -1,3 +1,4 @@
+import { VoucherTypeEnum } from '@common/enums/voucher.enum';
 import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
 
 export class CreateVoucherTable1729434776737 implements MigrationInterface {
@@ -33,8 +34,15 @@ export class CreateVoucherTable1729434776737 implements MigrationInterface {
             type: 'double',
           },
           {
+            name: 'typeDiscount',
+            type: 'enum',
+            enum: [...Object.values(VoucherTypeEnum)],
+            default: `'${VoucherTypeEnum.PERCENT}'`,
+          },
+          {
             name: 'discountToUp',
             type: 'double',
+            isNullable: true,
           },
           {
             name: 'minimumOrder',
@@ -64,10 +72,17 @@ export class CreateVoucherTable1729434776737 implements MigrationInterface {
           {
             name: 'endTime',
             type: 'datetime',
+            isNullable: true,
           },
           {
             name: 'type',
             type: 'varchar',
+          },
+
+          {
+            name: 'isGlobal',
+            type: 'boolean',
+            default: false,
           },
           {
             name: 'createdAt',

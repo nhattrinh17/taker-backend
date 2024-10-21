@@ -1,5 +1,6 @@
 import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { VoucherTypeEnum } from '@common/enums/voucher.enum';
 
 @Entity({ name: 'vouchers' })
 export class Voucher extends BaseEntity {
@@ -20,6 +21,13 @@ export class Voucher extends BaseEntity {
 
   @Column({ type: 'double' })
   discount: number;
+
+  @Column({
+    type: 'enum',
+    enum: VoucherTypeEnum,
+    default: VoucherTypeEnum.PERCENT,
+  })
+  typeDiscount: VoucherTypeEnum;
 
   @Column({ type: 'double' })
   discountToUp: number;
@@ -45,4 +53,7 @@ export class Voucher extends BaseEntity {
   @Index()
   @Column()
   type: string;
+
+  @Column({ default: false })
+  isGlobal: boolean;
 }
