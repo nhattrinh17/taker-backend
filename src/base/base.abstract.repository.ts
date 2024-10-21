@@ -44,7 +44,7 @@ export abstract class BaseRepositoryAbstract<T> implements BaseRepositoryInterfa
     const [items, count] = await this.repository.findAndCount({
       where: condition,
       select: options?.projection as any,
-      order: { [options?.sort]: options?.typeSort || 'DESC' } as any,
+      order: { [options?.sort || 'createdAt']: options?.typeSort || 'DESC' } as any,
       skip: options?.offset,
       take: options?.limit,
       relations: options?.relations,

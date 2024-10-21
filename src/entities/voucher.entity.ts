@@ -47,7 +47,7 @@ export class Voucher extends BaseEntity {
   @Column({ nullable: true })
   startTime: string;
 
-  @Column()
+  @Column({ nullable: true })
   endTime: string;
 
   @Index()

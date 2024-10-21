@@ -1,12 +1,5 @@
-import {
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Version,
-  Body,
-} from '@nestjs/common';
-import { ValidationPipe } from '@common/index';
+import { Controller, HttpCode, HttpStatus, Post, Version, Body, Get, UseGuards } from '@nestjs/common';
+import { AdminsAuthGuard, CurrentUser, ValidationPipe } from '@common/index';
 import { AuthenticationService } from './authentication.service';
 
 import { LoginDto } from './dto';
@@ -20,5 +13,13 @@ export class AuthenticationController {
   @Post('login')
   async login(@Body(ValidationPipe) body: LoginDto) {
     return this.service.login(body);
+  }
+
+  @Version('1')
+  @UseGuards(AdminsAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('userInfo')
+  async userInfo(@CurrentUser() user) {
+    return this.service.validateUser(user);
   }
 }

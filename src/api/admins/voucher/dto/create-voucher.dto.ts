@@ -1,4 +1,5 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { VoucherTypeEnum } from '@common/enums/voucher.enum';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateVoucherDto {
   @IsString()
@@ -17,7 +18,7 @@ export class CreateVoucherDto {
   discount: number;
 
   @IsString()
-  typeDiscount: string;
+  typeDiscount: VoucherTypeEnum;
 
   @IsNumber()
   discountToUp: number;
@@ -33,4 +34,37 @@ export class CreateVoucherDto {
   @IsOptional()
   @IsString()
   icon: string;
+
+  @IsOptional()
+  @IsString()
+  startTime: string;
+
+  @IsOptional()
+  @IsString()
+  endTime: string;
+
+  @IsString()
+  type: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isGlobal: boolean;
+}
+
+export class QueryVoucherDto {
+  @IsOptional()
+  @IsString()
+  search: string;
+
+  @IsOptional()
+  @IsString()
+  searchField: string;
+
+  @IsOptional()
+  @IsString()
+  sort: string;
+
+  @IsOptional()
+  @IsString()
+  typeSort: string;
 }
