@@ -16,7 +16,7 @@ export class VoucherService {
     if (dto.discount <= 0) throw Error(messageResponseError.voucher.discountThan0);
     const checkExits = await this.voucherAdminRepository.count({ code: dto.code });
     if (checkExits) throw new Error(messageResponseError.voucher.voucherAlreadyExits);
-    return this.voucherAdminRepository.create(dto);
+    return this.voucherAdminRepository.create({ ...dto, type: 'shoe' });
   }
 
   findAll(search: string, searchField: string, pagination: PaginationDto, sort: string, typeSort: string) {
@@ -24,12 +24,11 @@ export class VoucherService {
     if (search) {
       condition[searchField || 'name'] = search;
     }
-    if (searchField)
-      return this.voucherAdminRepository.findAll(condition, {
-        ...pagination,
-        sort,
-        typeSort,
-      });
+    return this.voucherAdminRepository.findAll(condition, {
+      ...pagination,
+      sort,
+      typeSort,
+    });
   }
 
   // findOne(id: number) {

@@ -48,6 +48,7 @@ import { CronsModule } from './api/crons/crons.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { VoucherModule } from '@admins/voucher/voucher.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -103,6 +104,7 @@ import { AppService } from './app.service';
     AdminsShoemakersModule,
     WithdrawalsModule,
     OptionModule,
+    VoucherModule,
     RouterModule.register([
       {
         path: 'customers',
@@ -189,6 +191,7 @@ import { AppService } from './app.service';
           { path: 'shoemakers', module: AdminsShoemakersModule },
           { path: 'withdrawals', module: WithdrawalsModule },
           { path: 'options', module: OptionModule },
+          { path: 'vouchers', module: VoucherModule },
         ],
       },
       {

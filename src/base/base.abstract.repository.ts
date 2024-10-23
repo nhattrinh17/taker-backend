@@ -5,7 +5,9 @@ import { Repository, EntityTarget, DeepPartial, SelectQueryBuilder } from 'typeo
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 export abstract class BaseRepositoryAbstract<T> implements BaseRepositoryInterface<T> {
-  protected constructor(protected readonly repository: Repository<T>) {}
+  protected constructor(protected readonly repository: Repository<T>) {
+    console.log('🚀 ~ BaseRepositoryAbstract<T> ~ constructor ~ repository:', repository);
+  }
 
   async create(dto: DeepPartial<T>): Promise<T> {
     const createdData = this.repository.create(dto);

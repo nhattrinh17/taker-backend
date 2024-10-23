@@ -1,6 +1,7 @@
 import {
   Admin,
   Customer,
+  CustomerVoucher,
   Notification,
   Option,
   RatingSummary,
@@ -15,6 +16,7 @@ import {
   TripLog,
   TripRating,
   TripService,
+  Voucher,
   Wallet,
   WalletLog,
 } from '@entities/index';
@@ -63,6 +65,8 @@ export const typeOrmConfig: DataSourceOptions = {
     Wallet,
     TripLog,
     Option,
+    Voucher,
+    CustomerVoucher,
   ],
   migrations: [join(__dirname, '../migrations/*{.ts,.js}')],
   synchronize: false,
