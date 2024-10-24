@@ -17,7 +17,7 @@ export class CustomerVoucher extends BaseEntity {
   voucher: Voucher;
 
   @Column()
-  voucherId: number;
+  voucherId: string;
 
   @Column({ nullable: true })
   timeUse: Date;

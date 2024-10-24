@@ -10,4 +10,13 @@ export class CustomerRepository extends BaseRepositoryAbstract<Customer> impleme
   constructor(@InjectRepository(Customer) private readonly customerRepository: Repository<Customer>) {
     super(customerRepository);
   }
+
+  getIdAllCustomer(): Promise<Customer[]> {
+    return this.customerRepository.find({
+      select: ['id'],
+      where: {
+        isVerified: true,
+      },
+    });
+  }
 }

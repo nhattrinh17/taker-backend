@@ -1,4 +1,6 @@
 import { Customer } from '@entities/index';
 import { BaseRepositoryInterface } from 'src/base';
 
-export interface CustomerRepositoryInterface extends BaseRepositoryInterface<Customer> {}
+export interface CustomerRepositoryInterface extends BaseRepositoryInterface<Customer> {
+  getIdAllCustomer(): Promise<Customer[]>;
+}

@@ -17,7 +17,6 @@ export interface BaseRepositoryInterface<T> {
       projection?: (keyof T)[];
       sort?: string;
       typeSort?: string;
-      include?: any[];
     },
   ): Promise<FindAllResponse<T>>;
 

@@ -26,10 +26,11 @@ export class VoucherController {
     return this.voucherService.findAll(dto.search, dto.searchField, pagination, dto.sort, dto.typeSort);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.voucherService.findOne(+id);
-  // }
+  @Get(':id/customer')
+  @Version('1')
+  findOne(@Param('id') id: string, @Pagination() pagination: PaginationDto) {
+    return this.voucherService.findOneAndDataCustomer(id, pagination);
+  }
 
   @Patch(':id')
   @Version('1')

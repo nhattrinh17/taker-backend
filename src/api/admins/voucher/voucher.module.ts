@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerVoucher, Voucher } from '@entities/index';
 import { VoucherAdminRepository } from 'src/database/repository/voucher.repository';
 import { CustomerVoucherAdminRepository } from 'src/database/repository/customerVoucher.repository';
+import { CustomerModule } from '@admins/customer/customer.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Voucher, CustomerVoucher])],
+  imports: [TypeOrmModule.forFeature([Voucher, CustomerVoucher]), CustomerModule],
   controllers: [VoucherController],
   providers: [
     VoucherService,

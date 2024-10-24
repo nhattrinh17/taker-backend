@@ -5,9 +5,7 @@ import { Repository, EntityTarget, DeepPartial, SelectQueryBuilder } from 'typeo
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 export abstract class BaseRepositoryAbstract<T> implements BaseRepositoryInterface<T> {
-  protected constructor(protected readonly repository: Repository<T>) {
-    console.log('🚀 ~ BaseRepositoryAbstract<T> ~ constructor ~ repository:', repository);
-  }
+  protected constructor(protected readonly repository: Repository<T>) {}
 
   async create(dto: DeepPartial<T>): Promise<T> {
     const createdData = this.repository.create(dto);
@@ -40,7 +38,6 @@ export abstract class BaseRepositoryAbstract<T> implements BaseRepositoryInterfa
       page: number;
       offset: number;
       limit: number;
-      relations: string[];
     },
   ): Promise<FindAllResponse<T>> {
     const [items, count] = await this.repository.findAndCount({
@@ -49,7 +46,6 @@ export abstract class BaseRepositoryAbstract<T> implements BaseRepositoryInterfa
       order: { [options?.sort || 'createdAt']: options?.typeSort || 'DESC' } as any,
       skip: options?.offset,
       take: options?.limit,
-      relations: options?.relations,
     });
 
     return {

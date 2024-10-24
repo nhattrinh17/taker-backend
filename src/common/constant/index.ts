@@ -7,5 +7,6 @@ export const messageResponseError = {
     expiredVoucher: 'expired_voucher',
     invalidVoucherType: 'invalid_voucher_type',
     invalidVoucherAmount: 'invalid_voucher_amount',
+    cannotDeleteBecauseUsed: 'cannot_delete_because_used',
   },
 };
