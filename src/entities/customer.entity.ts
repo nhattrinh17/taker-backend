@@ -63,6 +63,9 @@ export class Customer extends BaseEntity {
   @Column({ default: true })
   newUser: boolean;
 
+  @Column({ nullable: true })
+  address: string;
+
   // Soft delete
   @DeleteDateColumn({ type: 'datetime' })
   deletedAt: Date;
