@@ -49,6 +49,8 @@ import { CronsModule } from './api/crons/crons.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { VoucherModule } from '@admins/voucher/voucher.module';
+import { FirebaseService } from './common';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -201,6 +203,6 @@ import { VoucherModule } from '@admins/voucher/voucher.module';
     ]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, FirebaseService],
 })
 export class AppModule {}
