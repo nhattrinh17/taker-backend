@@ -39,7 +39,7 @@ export interface Location {
   lng: number;
 }
 
-export const RESOLUTION = 9;
+export const RESOLUTION = 12;
 
 export interface IPlaceDetail {
   title: string;
