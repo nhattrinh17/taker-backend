@@ -134,6 +134,7 @@ export class ProfileService {
         accountNumber: user.bankAccountNumber,
         accountName: user.bankAccountName,
         newUser: user.newUser,
+        isVerified: user.isVerified,
       };
     } catch (e) {
       throw new BadRequestException(e.message);

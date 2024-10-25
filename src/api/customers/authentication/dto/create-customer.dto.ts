@@ -13,6 +13,14 @@ export class CreateCustomerDto {
   @IsOptional()
   @IsString()
   referralCode: string;
+
+  @IsOptional()
+  @IsString()
+  address: string;
+
+  @IsOptional()
+  @IsString()
+  fullName: string;
 }
 
 export class VerifyPhoneNumberDto {

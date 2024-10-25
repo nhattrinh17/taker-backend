@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,27 +9,9 @@ import { Customer, Option } from '@entities/index';
 /**
  * Import dto
  */
-import {
-  CreateCustomerDto,
-  ForgotCustomerDto,
-  LoginCustomerDto,
-  NewPasswordDto,
-  VerifyOtpDto,
-  VerifyPhoneNumberDto,
-} from './dto';
+import { CreateCustomerDto, ForgotCustomerDto, LoginCustomerDto, NewPasswordDto, VerifyOtpDto, VerifyPhoneNumberDto } from './dto';
 
-import {
-  AppType,
-  DEFAULT_MESSAGES,
-  OPTIONS,
-  SmsService,
-  StringeeService,
-  generateHashedPassword,
-  generateOTP,
-  makePhoneNumber,
-  otpToText,
-  validPassword,
-} from '@common/index';
+import { AppType, DEFAULT_MESSAGES, OPTIONS, SmsService, StringeeService, generateHashedPassword, generateOTP, makePhoneNumber, otpToText, validPassword } from '@common/index';
 
 @Injectable()
 export class AuthenticationService {
@@ -111,31 +89,19 @@ export class AuthenticationService {
    * @param phone
    * @returns success
    */
-  async createAccount({ phone }: CreateCustomerDto) {
+  async createAccount(dto: CreateCustomerDto) {
     try {
-      // Generate OTP
-      const otp = generateOTP();
-      const otpText = otpToText(otp);
-      const phoneNumber = makePhoneNumber(phone);
-      // Check if phone number is existed
-      const foundUser = await this.userRepository.findOneBy({ phone });
+      const foundUser = await this.userRepository.findOneBy({ phone: dto.phone });
       if (foundUser) throw new BadRequestException('Phone number is existed');
       // Create account with phone and otp
       const user = await this.userRepository.save({
-        phone,
-        otp: otp.toString(),
+        phone: dto.phone,
         registrationDate: new Date(),
         wallet: { balance: 0 },
+        ...dto,
+        password: generateHashedPassword(dto.password),
       });
-      // Get option
-      const option = await this.loadOption();
-      // Make call to phone number with otp
-      const res = await this.stringeeService.makeCall({
-        toNumber: phoneNumber,
-        otp: otpText,
-        fromNumber: option?.value || null,
-      });
-      console.log('[STRINGEE][RES]', res?.data);
+
       return { userId: user.id };
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -151,6 +117,8 @@ export class AuthenticationService {
     try {
       const user = await this.userRepository.findOneBy({ id: userId, otp });
       if (!user) throw new BadRequestException('Invalid OTP');
+      const updateData = { isVerified: true, otp: null };
+      await this.userRepository.update(user.id, updateData);
 
       return !!user;
     } catch (e) {
@@ -174,8 +142,8 @@ export class AuthenticationService {
 
       if (password) {
         updateData['password'] = generateHashedPassword(password);
-        updateData['isVerified'] = true;
-        updateData['otp'] = null;
+        // updateData['isVerified'] = true;
+        // updateData['otp'] = null;
       }
       if (referralCode) updateData['referralCode'] = referralCode;
 
@@ -187,7 +155,7 @@ export class AuthenticationService {
         if (foundUser) throw new BadRequestException('Email is existed');
         updateData['email'] = dto.email;
       }
-      if (dto.fullName) updateData['fullName'] = dto.fullName;
+      // if (dto.fullName) updateData['fullName'] = dto.fullName;
 
       await this.userRepository.update(user.id, updateData);
 
@@ -207,8 +175,7 @@ export class AuthenticationService {
     try {
       const user = await this.userRepository.findOneBy({ phone });
       if (!user) throw new BadRequestException('Invalid phone or password');
-      if (!user.isVerified)
-        throw new BadRequestException('User is not verified');
+      // if (!user.isVerified) throw new BadRequestException('User is not verified');
 
       if (!validPassword(password, user.password)) {
         throw new BadRequestException('Invalid phone or password');
@@ -222,7 +189,7 @@ export class AuthenticationService {
       });
       return {
         token,
-        user: { fullName: user.fullName, id: user.id, avatar: user.avatar },
+        user: { fullName: user.fullName, id: user.id, avatar: user.avatar, isVerified: user.isVerified },
       };
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -242,20 +209,19 @@ export class AuthenticationService {
       const foundUser = await this.userRepository.findOneBy({ phone });
       if (!foundUser) throw new BadRequestException('Account not found');
       // Update account with phone and otp
-      const user = await this.userRepository.save({
-        id: foundUser.id,
-        otp: otp.toString(),
+      const user = await this.userRepository.update(foundUser.id, {
+        otp: otpText,
       });
       // Get option
       const option = await this.loadOption();
       // Make call to phone number with otp
-      const res = await this.stringeeService.makeCall({
-        toNumber: phoneNumber,
-        otp: otpText,
-        fromNumber: option?.value || null,
-      });
-      console.log('[STRINGEE][RES]', res?.data);
-      return { userId: user.id };
+      // const res = await this.stringeeService.makeCall({
+      //   toNumber: phoneNumber,
+      //   otp: otpText,
+      //   fromNumber: option?.value || null,
+      // });
+      // console.log('[STRINGEE][RES]', res?.data);
+      return { userId: foundUser.id };
     } catch (e) {
       throw new BadRequestException(e.message);
     }
@@ -286,6 +252,32 @@ export class AuthenticationService {
       const user = await this.loadUser(userId);
       await this.userRepository.softDelete(user.id);
       return DEFAULT_MESSAGES.SUCCESS;
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async makeCallUser(phone: string) {
+    try {
+      const user = await this.userRepository.findOneBy({ phone });
+      if (!user) throw new BadRequestException('Account not found');
+      //  Generate OTP and save
+      const otp = generateOTP();
+      const otpText = otpToText(otp);
+      const phoneNumber = makePhoneNumber(phone);
+      await this.userRepository.save({
+        otp: otpText,
+      });
+      // Get option
+      const option = await this.loadOption();
+      // Make call to phone number with otp
+      const res = await this.stringeeService.makeCall({
+        toNumber: phoneNumber,
+        otp: otp.toString(),
+        fromNumber: option?.value || null,
+      });
+      console.log('[STRINGEE][RES]', res?.data);
+      return { userId: user.id };
     } catch (e) {
       throw new BadRequestException(e.message);
     }

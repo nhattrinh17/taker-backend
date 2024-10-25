@@ -1,32 +1,9 @@
-import {
-  CurrentUser,
-  CustomersAuthGuard,
-  ICustomer,
-  ValidationPipe,
-} from '@common/index';
-import {
-  Body,
-  Controller,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  UseGuards,
-  Version,
-} from '@nestjs/common';
+import { CurrentUser, CustomersAuthGuard, ICustomer, ValidationPipe } from '@common/index';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, UseGuards, Version } from '@nestjs/common';
 
 import { AuthenticationService } from './authentication.service';
 
-import {
-  CreateCustomerDto,
-  ForgotCustomerDto,
-  LoginCustomerDto,
-  NewPasswordDto,
-  VerifyOtpDto,
-  VerifyPhoneNumberDto,
-} from './dto';
+import { CreateCustomerDto, ForgotCustomerDto, LoginCustomerDto, NewPasswordDto, VerifyOtpDto, VerifyPhoneNumberDto } from './dto';
 
 @Controller()
 export class AuthenticationController {
@@ -84,6 +61,13 @@ export class AuthenticationController {
 
   @HttpCode(HttpStatus.OK)
   @Version('1')
+  @Post('make-call')
+  call(@Body(ValidationPipe) dto: ForgotCustomerDto) {
+    return this.service.makeCallUser(dto.phone);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Version('1')
   @Post('send-sms')
   sendSms(@Body(ValidationPipe) dto: ForgotCustomerDto) {
     return this.service.sendSms(dto.phone);
@@ -100,10 +84,7 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   @Version('1')
   @Post(':id/new-password')
-  newPassword(
-    @Param('id', ParseUUIDPipe) userId: string,
-    @Body(ValidationPipe) dto: NewPasswordDto,
-  ) {
+  newPassword(@Param('id', ParseUUIDPipe) userId: string, @Body(ValidationPipe) dto: NewPasswordDto) {
     return this.service.newPassword(userId, dto);
   }
 }
